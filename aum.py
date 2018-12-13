@@ -108,7 +108,7 @@ def trial3(filename='data/justemenemoi.json'):
         uid = p.split('/')[-1]
         if uid not in db:
             page = s.get(p)
-            html = BeautifulSoup(page.text)
+            html = BeautifulSoup(page.content.decode('utf-8', 'xmlcharrefreplace'))
             
             img_url = html.find(id='img-current-pic')['src']
             img_name = img_url.split('/')[-1]
@@ -123,7 +123,7 @@ def trial3(filename='data/justemenemoi.json'):
             # Download and save profile pic
             pic=s.get(img_url, stream=True)
             pic.raw.decode_content=True
-            with open("data/" + img_name, 'wb') as f:
+            with open("data/pics/" + img_name, 'wb') as f:
                 shutil.copyfileobj(pic.raw, f)
 
     # Write back json

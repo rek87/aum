@@ -1,7 +1,7 @@
 <html>
     <head>
         <title>Display results!</title>
-        
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <script type="text/javascript" src="data/justemenemoi.json.js">/* Load json data*/</script>
     </head>
     <body>
@@ -14,11 +14,21 @@
                 // Rows
                 for (var i in data) {
                     var tr = document.createElement('tr')
-                    
+
+                    var img_lnk = document.createElement('img')
+                    img_lnk.setAttribute('src', "data/pics/" + data[i]['img'])
                     var td = document.createElement('td')
-                    td.appendChild(document.createTextNode(data[i].name))
-                    td.style.border = '1px solid black';
+                    td.appendChild(img_lnk)
                     tr.appendChild(td)
+
+                    var attrs = ['name', 'city', 'age', 'desc', 'shop']
+                    for (var k in attrs) {
+                        var td = document.createElement('td')
+                        // Esiste un mdo piu intelligente ??
+                        td.appendChild(document.createTextNode(data[i][attrs[k]]))
+                        td.style.border = '1px solid black';
+                        tr.appendChild(td)
+                    }                   
                     
                     table.appendChild(tr)
                 }
