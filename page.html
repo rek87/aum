@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <title>Display results!</title>
+        
+        <script type="text/javascript" src="data/justemenemoi.json.js">/* Load json data*/</script>
+    </head>
+    <body>
+        <script>
+            function tableCreate()
+            {
+                var body = document.body
+                var table = document.createElement('table')
+                table.style.border = '1px solid black';
+                // Rows
+                for (var i in data) {
+                    var tr = document.createElement('tr')
+                    
+                    var td = document.createElement('td')
+                    td.appendChild(document.createTextNode(data[i].name))
+                    td.style.border = '1px solid black';
+                    tr.appendChild(td)
+                    
+                    table.appendChild(tr)
+                }
+                body.appendChild(table)
+            }
+            tableCreate();
+        </script>
+    </body>
+</html>

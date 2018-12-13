@@ -60,18 +60,84 @@ def use_selenium():
     profiles=[p for p in {l.get('href') for l in html.find_all('a')} if isinstance(p, str) and p.find('profile')>0]
     print len(profiles)
 
-br=webdriver.Chrome('/usr/lib/chromium-browser/chromedriver')
+from requestium import Session, Keys
+import json
+import shutil
+from random import randint
 
-# Login
-br.get('https://www.adopteunmec.com/')
-br.find_element_by_name('username').send_keys('justemenemoi@gmail.com')
-br.find_element_by_name('password').send_keys('Adottami1')
-br.find_element_by_name('password').submit()
-time.sleep(1)
+# Seems to work
+def trial3(filename='data/justemenemoi.json'):  
+    # Use requests to authenticate and do search
+    s=Session(webdriver_path='/usr/lib/chromium-browser/chromedriver', browser='chrome')
+    s.headers.update({'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0'})
+    r=s.get('https://www.adopteunmec.com')
+    r=s.post('https://www.adopteunmec.com/auth/login', data={'username':'justemenemoi@gmail.com', 'password':'Adottami1'})
+    r=s.get('https://www.adopteunmec.com/mySearch')
 
-# Search
-br.get('https://www.adopteunmec.com/mySearch')
-# Select distance
-ActionChains(aum.br).move_to_element(br.find_element_by_id('by-button')).click().send_keys('distance').send_keys(Keys.ENTER).perform()
-#br.find_element_by_name('age[min]').submit()
-#time.sleep(1)
+    r=s.post('https://www.adopteunmec.com/mySearch/save', data={'age[min]':25, 'age[max]':26, 'by':'distance', 'distance[max]':10})
+    html = BeautifulSoup(r.text, 'lxml')
+    profiles = [p for p in {l.get('href') for l in html.find_all('a')} if isinstance(p, str) and p.find('profile')>0]
+    print len(profiles)
+
+    time.sleep(3)
+    
+    # Trasnfer cookie to selenium, refresh the page, scroll to end 10 times, and get profiles
+    s.transfer_session_cookies_to_driver()
+    s.driver.get('https://www.adopteunmec.com/mySearch/results')
+    for i in range(10):
+        s.driver.find_element_by_tag_name('html').send_keys(Keys.END)
+        time.sleep(.1)
+    html=BeautifulSoup( s.driver.execute_script("return document.body.innerHTML") )
+    profiles = [p for p in {l.get('href') for l in html.find_all('a')} if isinstance(p, str) and p.find('profile')>0]
+    print len(profiles)
+
+    # Load already visited profiles
+    db = {}
+    try:
+        with open(filename, 'r') as in_f:
+            db = json.load(in_f)
+    except:
+        pass
+
+    # Loop on profiles, get descriptions
+    s.transfer_driver_cookies_to_session()
+    s.driver.close() # Might be done before ?
+    profiles=[profiles[randint(0, len(profiles))]]
+    for p in profiles:
+        # Check if profile already in db
+        uid = p.split('/')[-1]
+        if uid not in db:
+            page = s.get(p)
+            html = BeautifulSoup(page.text)
+            
+            img_url = html.find(id='img-current-pic')['src']
+            img_name = img_url.split('/')[-1]
+            db[uid] = {
+                "name": html.find('div', {'class':'username'}).get_text(),
+                "img": img_name,
+                "age": html.find('span', {'class':'age'}).get_text(),
+                "city": html.find('span', {'class':'city'}).get_text(),
+                "desc": html.find(text='Description').find_parent('div').find('p').get_text(),
+                "shop": html.find(text='Shopping List').find_parent('div').find('p').get_text() }
+            
+            # Download and save profile pic
+            pic=s.get(img_url, stream=True)
+            pic.raw.decode_content=True
+            with open("data/" + img_name, 'wb') as f:
+                shutil.copyfileobj(pic.raw, f)
+
+    # Write back json
+    json_s = json.dumps(db) # Dump as a string, to write to file and as JS var
+    with open(filename, 'w') as out_f:
+        out_f.write(json_s)
+    with open(filename + '.js', 'w') as out_f:
+        out_f.write("data = ")
+        out_f.write(json_s)
+    
+
+# Tinder
+# x-auth-token	c7ff6484-8fbd-4246-94f0-71b813957c0e
+#https://www.facebook.com/fede.rek.7
+#https://www.facebook.com/photo.php?fbid=897484456993922&set=a.101328586609517&type=3&source=11&referrer_profile_id=100001971275275
+# ID:
+#https://www.facebook.com/100001971275275
