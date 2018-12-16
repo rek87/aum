@@ -15,10 +15,13 @@
                 for (var i in data) {
                     var tr = document.createElement('tr')
 
+                    var lnk = document.createElement('a')
+                    lnk.setAttribute('href', data[i]['profile'])
                     var img_lnk = document.createElement('img')
                     img_lnk.setAttribute('src', "data/pics/" + data[i]['img'])
                     var td = document.createElement('td')
-                    td.appendChild(img_lnk)
+                    lnk.appendChild(img_lnk)
+                    td.appendChild(lnk)
                     tr.appendChild(td)
 
                     var attrs = ['name', 'city', 'age', 'desc', 'shop']
