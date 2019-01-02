@@ -10,9 +10,13 @@
             {
                 var body = document.body
                 var table = document.createElement('table')
+                table.setAttribute('width', '100%')
                 table.style.border = '1px solid black';
                 // Rows
                 for (var i in data) {
+                    if (data[i]['desc'].length === 0)
+                        continue
+
                     var tr = document.createElement('tr')
 
                     var lnk = document.createElement('a')
@@ -31,8 +35,8 @@
                         td.appendChild(document.createTextNode(data[i][attrs[k]]))
                         td.style.border = '1px solid black';
                         tr.appendChild(td)
-                    }                   
-                    
+                    }
+
                     table.appendChild(tr)
                 }
                 body.appendChild(table)

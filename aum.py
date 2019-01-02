@@ -10,21 +10,22 @@ import time
 class AuM(object):
     def __init__(self):
         # Create a session and authenticate
-        self._s = Session(webdriver_path='/usr/lib/chromium-browser/chromedriver', browser='chrome')
+        self._s = Session(webdriver_path='/usr/lib/chromium-browser/chromedriver', browser='chrome',
+            webdriver_options={"arguments": ["--headless"]})
         self._s.headers.update(
             {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0'})
         self._s.get('https://www.adopteunmec.com')
         # TODO: check successful login
         self._s.post('https://www.adopteunmec.com/auth/login',
-            data={'username':'meredithabt@gmail.com', 'password':'Adottami9'})
+            data={'username':'francois_abc12@gmail.com', 'password':'Adottami1'})
 
-        self._common_names=('m', 'loic', 'marc', 'anthony', 'tom', 'jordan', 'florian', 'jean', 'manu', 'seb',
+        self._common_names=('loic', 'marc', 'anthony', 'tom', 'jordan', 'florian', 'jean', 'manu', 'seb',
             'alex', 'lilian', 'angelo', 'fred', 'valent', 'fabrice', 'fabien', 'nico', 'thomas', 'sylvain', 'tim',
             'karim', 'robin', 'pierre', 'arnaud', 'max', 'luc', 'mike', 'yann', 'oliv', 'yvan', 'jerem', 'michel',
             'mat', 'kev', 'damien', 'vinc', 'eric', 'gilles', 'jona', 'bruno', 'simon', 'adri', 'serge', 'tony',
-            'julien', 'quentin', 'leo', 'step', 'gab', 'david', 'paul', 'killian', 'alvaro', 'ronan', 'anto', 'jb',
+            'jul', 'quentin', 'leo', 'step', 'gab', 'david', 'paul', 'killian', 'alvaro', 'ronan', 'anto', 'jb',
             'jp', 'jon', 'patrick', 'virgile', 'juju', 'stef', 'franck', 'alan', 'alain', 'albin', 'alban', 'fran',
-            'cyril', 'laure', 'phil', 'jacques', 'jack')
+            'cyril', 'laure', 'phil', 'jacques', 'jack', 'ludo', 'chris', 'vic', 'jo', 'charles', 'geoffrey')
 
     def _common_name(self, name):
         return len(filter(lambda x: x is False,
@@ -55,7 +56,7 @@ class AuM(object):
             self._s.driver.find_element_by_tag_name('html').send_keys(Keys.END)
             time.sleep(.1)
         html=BeautifulSoup(
-            self._s.driver.execute_script("return document.body.innerHTML"))
+            self._s.driver.execute_script("return document.body.innerHTML"), 'lxml')
         self._s.transfer_driver_cookies_to_session()
         self._s.driver.close() # Might be done before ?
 
@@ -67,6 +68,7 @@ class AuM(object):
         profiles = [l.get('href').split('/')[-1]
             for l in all_a if isinstance(l.get('href'), str)
                 and l.get('href').find('profile') > 0
+                and len(l.get_text()) > 2
                 and not self._common_name(l.get_text())]
         return profiles
 
@@ -124,6 +126,29 @@ class AuM(object):
             out_f.write("data = ")
             out_f.write(json_s)
 
+def filter_results(filename='data/justemenemoi.json', f=[]):
+    db = {}
+    try:
+        with open(filename, 'r') as in_f:
+            db = json.load(in_f)
+    except:
+        pass
+
+    f = [i.lower() for i in f]
+
+    for i in db:
+        if db[i]["name"].lower() in f:
+            db[i]["desc"]=""
+            db[i]["shop"]=""
+
+    # Write back json
+    json_s = json.dumps(db) # Dump as a string, to write to file and as JS var
+    with open(filename, 'w') as out_f:
+        out_f.write(json_s)
+    with open(filename + '.js', 'w') as out_f:
+        out_f.write("data = ")
+        out_f.write(json_s)
+
 
 import os
 def do_crawl():
@@ -132,10 +157,10 @@ def do_crawl():
     region = 0
     try:
         with open('aum.cfg', 'r') as cfg:
-            region = int(cfg.readline)
+            region = int(cfg.readline())
     except:
         pass
-    region = (region + 1 % 24)
+    region = (region + 1) % 24
 
     try:
         web=AuM()
