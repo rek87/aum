@@ -4,6 +4,8 @@ from requestium import Session, Keys
 import json
 import shutil
 from random import randint
+import random
+import string
 from bs4 import BeautifulSoup
 import time
 
@@ -14,10 +16,31 @@ class AuM(object):
             webdriver_options={"arguments": ["--headless"]})
         self._s.headers.update(
             {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0'})
-        self._s.get('https://www.adopteunmec.com')
-        # TODO: check successful login
-        self._s.post('https://www.adopteunmec.com/auth/login',
-            data={'username':'francois_abc12@gmail.com', 'password':'Adottami1'})
+        self._s.get('https://www.adopteunmec.com') # Maybe not needed
+        # Register a new account
+        rand_s = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(6))
+        print ('email used: francois_%s@gmail.com' % rand_s)
+        r = self._s.post('https://www.adopteunmec.com/register/index',
+            data={
+                'sex': '1', 'day': '03', 'month': '4', 'year': '1997',
+                'email': 'francois_%s@gmail.com' % rand_s,
+                'password': 'Adottami1', 'password_check': 'Adottami1',
+                'country': 'fr', 'zipcode': '06000', 'city': 'Nice', 'confirm_city': '0',
+                'pseudo': 'RedoAA', 'cgu': '1',
+                'reg_submit': '', 'by_popup': '1', 'PreventChromeAutocomplete': ''
+                },
+            headers= {
+                "X-Requested-With": "XMLHttpRequest",
+                "Origin": "https://www.adopteunmec.com/",
+                "Referer": "https://www.adopteunmec.com/"
+                }
+            )
+        status = r.json()
+        # If registration were successful, go to redirect page to confirm account
+        if (status['success'] == 1):
+            self._s.get(status['redirect'])
+        else:
+            print ('Something went wrong....')
 
         self._common_names=('loic', 'marc', 'anthony', 'tom', 'jordan', 'florian', 'jean', 'manu', 'seb',
             'alex', 'lilian', 'angelo', 'fred', 'valent', 'fabrice', 'fabien', 'nico', 'thomas', 'sylvain', 'tim',
