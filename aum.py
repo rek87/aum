@@ -48,7 +48,8 @@ class AuM(object):
             'mat', 'kev', 'damien', 'vinc', 'eric', 'gilles', 'jona', 'bruno', 'simon', 'adri', 'serge', 'tony',
             'jul', 'quentin', 'leo', 'step', 'gab', 'david', 'paul', 'killian', 'alvaro', 'ronan', 'anto', 'jb',
             'jp', 'jon', 'patrick', 'virgile', 'juju', 'stef', 'franck', 'alan', 'alain', 'albin', 'alban', 'fran',
-            'cyril', 'laure', 'phil', 'jacques', 'jack', 'ludo', 'chris', 'vic', 'jo', 'charles', 'geoffrey')
+            'cyril', 'laure', 'phil', 'jacques', 'jack', 'ludo', 'chris', 'vic', 'jo', 'charles', 'geoffrey', 'igor',
+            'ciro', 'erwan', 'fabio', 'guillaume', 'thibaut', 'romain', 'rafa', 'lionel', 'cedric', 'xavier')
 
     def _common_name(self, name):
         return len(filter(lambda x: x is False,
@@ -119,7 +120,7 @@ class AuM(object):
                 desc = html.find(text='Description').find_parent('div').find('p').get_text()
                 shop = html.find(text='Shopping List').find_parent('div').find('p').get_text()
                 # Profile Filtering
-                if desc.find("non renseign") >= 0 or shop.find("non renseign") >= 0:
+                if desc.find("non renseign") >= 0 or shop.find("non renseign") >= 0 or len(desc) < 20 or len(shop) < 20:
                     continue
 
                 img_url = html.find(id='img-current-pic')['src']
