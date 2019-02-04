@@ -14,15 +14,17 @@ class Charme(object):
             #webdriver_options={"arguments": ["--headless"]})
         self._s.headers.update(
             {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0'})
-        #self._s.get('https://www.adopteunmec.com') # Maybe not needed
 
         # Login
-        self._s.post('https://www.adopteunmec.com/auth/login',
+        r = self._s.post('https://www.adopteunmec.com/auth/login',
             data={'username':'bbrss@autistici.org', 'password':'Adottami1'})
-        time.sleep(2)
+        if not r.ok:
+            raise 'Something wrong in login'
+        else:
+            time.sleep(2)
 
 
-    def search_by_disance(self, age_min=20, age_max=30, distance=40, sex=1):
+    def search_by_distance(self, age_min=20, age_max=30, distance=40, sex=1):
         return self.search(
             {'age[min]':age_min, 'age[max]':age_max, 'by':'distance', 'distance[max]':distance, "sex":sex})
 
@@ -78,7 +80,7 @@ class Charme(object):
                 url = "https://www.adopteunmec.com/profile/" + uid
                 print "Visiting", url
                 page = self._s.get(url)
-                html = BeautifulSoup(page.content.decode('utf-8', 'xmlcharrefreplace'))
+                html = BeautifulSoup(page.content.decode('utf-8', 'xmlcharrefreplace'), 'lxml')
 
                 img_url = html.find(id='img-current-pic')['src']
                 img_name = img_url.split('/')[-1]
@@ -104,8 +106,9 @@ class Charme(object):
 
                 # Send a charme
                 url = "https://www.adopteunmec.com/events/charm?id=" + uid
-                page = self._s.get(url)
-                print page.json()
+                r = self._s.get(url)
+                if r.json()['member']['id'] != uid:
+                    raise 'Something wrong in response'
 
 
         # Write back json
